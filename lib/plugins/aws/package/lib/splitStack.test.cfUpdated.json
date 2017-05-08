@@ -1,0 +1,228 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket"
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "dev",
+                  "complex-service",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/complex-service-dev-hello:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/complex-service-dev-goodbye:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/complex-service-dev-hello:*:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/complex-service-dev-goodbye:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetRecords",
+                    "dynamodb:GetShardIterator",
+                    "dynamodb:DescribeStream",
+                    "dynamodb:ListStreams"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ResourcesDynamoDBStream",
+                        "StreamArn"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "kinesis:GetRecords",
+                    "kinesis:GetShardIterator",
+                    "kinesis:DescribeStream",
+                    "kinesis:ListStreams"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ResourcesKinesisStream",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "complex-service",
+              "dev",
+              "us-east-1",
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "ResourcesKinesisStream": {
+      "Type": "AWS::Kinesis::Stream",
+      "Properties": {
+        "Name": "ResourcesKinesisStream",
+        "ShardCount": 1
+      }
+    },
+    "ResourcesDynamoDBStream": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "ResourcesDynamoDBStream",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "StreamSpecification": {
+          "StreamViewType": "NEW_AND_OLD_IMAGES"
+        }
+      }
+    },
+    "NestedStack1": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "Parameters": {
+          "ServerlessDeploymentBucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "ResourcesDynamoDBStream": {
+            "Fn::GetAtt": [
+              "ResourcesDynamoDBStream",
+              "StreamArn"
+            ]
+          },
+          "ResourcesKinesisStream": {
+            "Ref": "ResourcesKinesisStream"
+          },
+          "IamRoleLambdaExecution": {
+            "Fn::GetAtt": [
+              "IamRoleLambdaExecution",
+              "Arn"
+            ]
+          }
+        },
+        "TemplateURL": "https://s3.amazonaws.com/%DEPLOYMENT-BUCKET-NAME%/serverless/complex-service/dev/1494244856897-2017-05-08T12:00:56.897Z/cloudformation-template-nested-stack-1.json"
+      },
+      "Description": "Stack for function \"HelloLambdaFunction\" and its dependencies",
+      "DependsOn": [
+        "ServerlessDeploymentBucket",
+        "ResourcesDynamoDBStream",
+        "ResourcesKinesisStream",
+        "IamRoleLambdaExecution"
+      ]
+    },
+    "NestedStack2": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "Parameters": {
+          "ServerlessDeploymentBucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "ResourcesDynamoDBStream": {
+            "Ref": "ResourcesDynamoDBStream"
+          },
+          "ResourcesKinesisStream": {
+            "Fn::GetAtt": [
+              "ResourcesKinesisStream",
+              "Arn"
+            ]
+          },
+          "IamRoleLambdaExecution": {
+            "Fn::GetAtt": [
+              "IamRoleLambdaExecution",
+              "Arn"
+            ]
+          }
+        },
+        "TemplateURL": "https://s3.amazonaws.com/%DEPLOYMENT-BUCKET-NAME%/serverless/complex-service/dev/1494244856897-2017-05-08T12:00:56.897Z/cloudformation-template-nested-stack-2.json"
+      },
+      "Description": "Stack for function \"GoodbyeLambdaFunction\" and its dependencies",
+      "DependsOn": [
+        "ServerlessDeploymentBucket",
+        "ResourcesDynamoDBStream",
+        "ResourcesKinesisStream",
+        "IamRoleLambdaExecution"
+      ]
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      }
+    }
+  }
+}

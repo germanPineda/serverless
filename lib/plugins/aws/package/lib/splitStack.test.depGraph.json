@@ -1,0 +1,83 @@
+{
+  "nodes": {
+    "ServerlessDeploymentBucket": {
+      "type": "resource"
+    },
+    "HelloLogGroup": {
+      "type": "resource"
+    },
+    "GoodbyeLogGroup": {
+      "type": "resource"
+    },
+    "IamRoleLambdaExecution": {
+      "type": "resource"
+    },
+    "HelloLambdaFunction": {
+      "type": "resource"
+    },
+    "GoodbyeLambdaFunction": {
+      "type": "resource"
+    },
+    "HelloEventsRuleSchedule1": {
+      "type": "resource"
+    },
+    "HelloLambdaPermissionEventsRuleSchedule1": {
+      "type": "resource"
+    },
+    "SNSTopicComplexsnstopic": {
+      "type": "resource"
+    },
+    "GoodbyeLambdaPermissionComplexsnstopicSNS": {
+      "type": "resource"
+    },
+    "HelloEventSourceMappingDynamodbResourcesDynamoDBStream": {
+      "type": "resource"
+    },
+    "GoodbyeEventSourceMappingKinesisResourcesKinesisStream": {
+      "type": "resource"
+    },
+    "ResourcesKinesisStream": {
+      "type": "resource"
+    },
+    "ResourcesDynamoDBStream": {
+      "type": "resource"
+    },
+    "ServerlessDeploymentBucketName": {
+      "type": "output"
+    }
+  },
+  "outgoingEdges": {
+    "ServerlessDeploymentBucket": [],
+    "HelloLogGroup": [],
+    "GoodbyeLogGroup": [],
+    "IamRoleLambdaExecution": ["ResourcesDynamoDBStream", "ResourcesKinesisStream"],
+    "HelloLambdaFunction": ["ServerlessDeploymentBucket", "IamRoleLambdaExecution", "HelloLogGroup"],
+    "GoodbyeLambdaFunction": ["ServerlessDeploymentBucket", "IamRoleLambdaExecution", "GoodbyeLogGroup"],
+    "HelloEventsRuleSchedule1": ["HelloLambdaFunction"],
+    "HelloLambdaPermissionEventsRuleSchedule1": ["HelloLambdaFunction", "HelloEventsRuleSchedule1"],
+    "SNSTopicComplexsnstopic": ["GoodbyeLambdaFunction"],
+    "GoodbyeLambdaPermissionComplexsnstopicSNS": ["GoodbyeLambdaFunction"],
+    "HelloEventSourceMappingDynamodbResourcesDynamoDBStream": ["IamRoleLambdaExecution", "ResourcesDynamoDBStream", "HelloLambdaFunction"],
+    "GoodbyeEventSourceMappingKinesisResourcesKinesisStream": ["IamRoleLambdaExecution", "ResourcesKinesisStream", "GoodbyeLambdaFunction"],
+    "ResourcesKinesisStream": [],
+    "ResourcesDynamoDBStream": [],
+    "ServerlessDeploymentBucketName": ["ServerlessDeploymentBucket"]
+  },
+  "incomingEdges": {
+    "ServerlessDeploymentBucket": ["HelloLambdaFunction", "GoodbyeLambdaFunction", "ServerlessDeploymentBucketName"],
+    "HelloLogGroup": ["HelloLambdaFunction"],
+    "GoodbyeLogGroup": ["GoodbyeLambdaFunction"],
+    "IamRoleLambdaExecution": ["HelloLambdaFunction", "GoodbyeLambdaFunction", "HelloEventSourceMappingDynamodbResourcesDynamoDBStream", "GoodbyeEventSourceMappingKinesisResourcesKinesisStream"],
+    "HelloLambdaFunction": ["HelloEventsRuleSchedule1", "HelloLambdaPermissionEventsRuleSchedule1", "HelloEventSourceMappingDynamodbResourcesDynamoDBStream"],
+    "GoodbyeLambdaFunction": ["SNSTopicComplexsnstopic", "GoodbyeLambdaPermissionComplexsnstopicSNS", "GoodbyeEventSourceMappingKinesisResourcesKinesisStream"],
+    "HelloEventsRuleSchedule1": ["HelloLambdaPermissionEventsRuleSchedule1"],
+    "HelloLambdaPermissionEventsRuleSchedule1": [],
+    "SNSTopicComplexsnstopic": [],
+    "GoodbyeLambdaPermissionComplexsnstopicSNS": [],
+    "HelloEventSourceMappingDynamodbResourcesDynamoDBStream": [],
+    "GoodbyeEventSourceMappingKinesisResourcesKinesisStream": [],
+    "ResourcesKinesisStream": ["IamRoleLambdaExecution", "GoodbyeEventSourceMappingKinesisResourcesKinesisStream"],
+    "ResourcesDynamoDBStream": ["IamRoleLambdaExecution", "HelloEventSourceMappingDynamodbResourcesDynamoDBStream"],
+    "ServerlessDeploymentBucketName": []
+  }
+}

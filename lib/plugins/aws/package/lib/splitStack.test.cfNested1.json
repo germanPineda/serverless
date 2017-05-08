@@ -1,0 +1,104 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Stack for function \"HelloLambdaFunction\" and its dependencies",
+  "Parameters": {
+    "ServerlessDeploymentBucket": {
+      "Type": "String"
+    },
+    "ResourcesDynamoDBStream": {
+      "Type": "String"
+    },
+    "ResourcesKinesisStream": {
+      "Type": "String"
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "HelloLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/complex-service/dev/1494244856897-2017-05-08T12:00:56.897Z/complex-service.zip"
+        },
+        "FunctionName": "complex-service-dev-hello",
+        "Handler": "handler.hello",
+        "MemorySize": 1024,
+        "Role": {
+          "Ref": "IamRoleLambdaExecution"
+        },
+        "Runtime": "nodejs6.10",
+        "Timeout": 6
+      },
+      "DependsOn": [
+        "HelloLogGroup"
+      ]
+    },
+    "HelloLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/complex-service-dev-hello"
+      }
+    },
+    "HelloLambdaPermissionEventsRuleSchedule1": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "HelloLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "HelloEventsRuleSchedule1",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "HelloEventsRuleSchedule1": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "ScheduleExpression": "rate(2 hours)",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "HelloLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Id": "helloSchedule"
+          }
+        ]
+      }
+    },
+    "HelloEventSourceMappingDynamodbResourcesDynamoDBStream": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [],
+      "Properties": {
+        "BatchSize": 10,
+        "EventSourceArn": {
+          "Ref": "ResourcesDynamoDBStream"
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "HelloLambdaFunction",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "TRIM_HORIZON",
+        "Enabled": "True"
+      }
+    }
+  },
+  "Outputs": {}
+}

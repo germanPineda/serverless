@@ -1,0 +1,115 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Stack for function \"GoodbyeLambdaFunction\" and its dependencies",
+  "Parameters": {
+    "ServerlessDeploymentBucket": {
+      "Type": "String"
+    },
+    "ResourcesDynamoDBStream": {
+      "Type": "String"
+    },
+    "ResourcesKinesisStream": {
+      "Type": "String"
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "GoodbyeLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/complex-service/dev/1494244856897-2017-05-08T12:00:56.897Z/complex-service.zip"
+        },
+        "FunctionName": "complex-service-dev-goodbye",
+        "Handler": "handler.goodbye",
+        "MemorySize": 1024,
+        "Role": {
+          "Ref": "IamRoleLambdaExecution"
+        },
+        "Runtime": "nodejs6.10",
+        "Timeout": 6
+      },
+      "DependsOn": [
+        "GoodbyeLogGroup"
+      ]
+    },
+    "GoodbyeLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/complex-service-dev-goodbye"
+      }
+    },
+    "SNSTopicComplexsnstopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "complex-sns-topic",
+        "DisplayName": "SNS topic for a complex event setup",
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Fn::GetAtt": [
+                "GoodbyeLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Protocol": "lambda"
+          }
+        ]
+      }
+    },
+    "GoodbyeLambdaPermissionComplexsnstopicSNS": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GoodbyeLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "sns.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:aws:sns:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              "complex-sns-topic"
+            ]
+          ]
+        }
+      }
+    },
+    "GoodbyeEventSourceMappingKinesisResourcesKinesisStream": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [],
+      "Properties": {
+        "BatchSize": 10,
+        "EventSourceArn": {
+          "Ref": "ResourcesKinesisStream"
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GoodbyeLambdaFunction",
+            "Arn"
+          ]
+        },
+        "StartingPosition": "TRIM_HORIZON",
+        "Enabled": "True"
+      }
+    }
+  },
+  "Outputs": {}
+}
